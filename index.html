@@ -10,19 +10,19 @@
   }
   body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:linear-gradient(180deg,#071028 0%, #041021 100%);color:#eaf6ff}
   .wrap{max-width:920px;margin:14px auto;padding:12px}
-  .tabs{display:flex;border-radius:12px;overflow:hidden;box-shadow:0 6px 18px rgba(2,6,23,0.6)}
+  .tabs{display:flex;border-radius:12px;overflow:hidden;box-shadow:0 6px 18px rgba(2,6,23,.6)}
   .tab{flex:1;padding:12px;text-align:center;cursor:pointer;background:var(--card);color:var(--muted);font-weight:700}
   .tab.active{background:#07253a;color:white}
   .container{padding:14px}
-  .group{margin-top:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);padding:12px;border-radius:10px}
+  .group{margin-top:12px;background:linear-gradient(180deg,rgba(255,255,255,.02),transparent);padding:12px;border-radius:10px}
   .group-title{display:flex;justify-content:space-between;align-items:center;color:var(--accent);font-weight:700}
   ul.checklist{list-style:none;padding:0;margin:8px 0}
-  li.item{display:flex;align-items:center;gap:12px;padding:8px;border-radius:8px;margin-bottom:8px;background:rgba(255,255,255,0.01)}
+  li.item{display:flex;align-items:center;gap:12px;padding:8px;border-radius:8px;margin-bottom:8px;background:rgba(255,255,255,.01)}
   input[type=checkbox]{width:20px;height:20px;accent-color:var(--accent)}
   label.item-label{flex:1}
   .add-row{display:flex;gap:8px;margin-top:10px}
-  input[type=text]{flex:1;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
-  button{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--accent);padding:8px 10px;border-radius:8px;font-weight:700;cursor:pointer}
+  input[type=text]{flex:1;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,.04);background:transparent;color:inherit}
+  button{background:transparent;border:1px solid rgba(255,255,255,.04);color:var(--accent);padding:8px 10px;border-radius:8px;font-weight:700;cursor:pointer}
   button.ghost{border-style:dashed;color:var(--muted)}
   .small{font-size:13px;color:var(--muted)}
   .actions{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
@@ -31,41 +31,33 @@
 </head>
 <body>
   <div class="wrap">
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <h2 style="margin:0">Universal Checklist</h2>
-      <div class="small">Synced via Firebase</div>
-    </div>
+    <h2>Universal Checklist</h2>
 
-    <div class="tabs" style="margin-top:12px">
+    <div class="tabs">
       <div class="tab active" data-tab="movies">🎬 Movies</div>
       <div class="tab" data-tab="novels">📚 Novels</div>
     </div>
 
     <div class="container" id="app">
       <div class="actions">
-        <button id="checkAll">Check all visible</button>
-        <button id="uncheckAll">Uncheck all visible</button>
-        <button id="export" class="ghost">Export</button>
-        <button id="importBtn" class="ghost">Import</button>
-        <input id="importFile" type="file" accept="application/json" style="display:none">
+        <button id="checkAll">Check all</button>
+        <button id="uncheckAll">Uncheck all</button>
       </div>
 
       <div id="content"></div>
 
-      <div class="add-row" style="margin-top:14px">
-        <input id="newSeries" type="text" placeholder="Add new series (will create in active tab)...">
+      <div class="add-row">
+        <input id="newSeries" type="text" placeholder="Add new series to active tab...">
         <button id="addSeriesBtn">Add Series</button>
       </div>
-
-      <p class="small" style="margin-top:10px">If pages show empty, fix Firestore rules.</p>
     </div>
   </div>
 
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
 <script>
-/* ========= YOUR FIREBASE CONFIG (INSTALLED) ========= */
+/* ========= YOUR FIREBASE CONFIG ========= */
 
 const firebaseConfig = {
     apiKey: "AIzaSyBVxEWfNXIVvcTRmhhEms0TY2G3clbXuZs",
@@ -77,14 +69,14 @@ const firebaseConfig = {
     measurementId: "G-P6YEE8T6MC"
 };
 
-/* ==================================================== */
+/* ======================================== */
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
 let activeTab = "movies";
 
-/* ========= PRE-LOADED NOVELS (Riordan + SH) ========== */
+/* ========= FULL RIORDAN + SH LIST ========= */
 
 const defaultNovels = [
   { name: "Kane Chronicles", items: [
@@ -93,7 +85,9 @@ const defaultNovels = [
   { name: "Percy Jackson & the Olympians", items: [
     "The Lightning Thief","The Sea of Monsters","The Titan’s Curse","The Battle of the Labyrinth","The Last Olympian"
   ]},
-  { name: "PJO Extras", items: ["The Demigod Files","The Sword of Hades"]},
+  { name: "PJO Extras", items: [
+    "The Demigod Files","The Sword of Hades"
+  ]},
   { name: "Heroes of Olympus", items: [
     "The Lost Hero","The Son of Neptune","The Mark of Athena","The House of Hades","The Blood of Olympus"
   ]},
@@ -103,7 +97,7 @@ const defaultNovels = [
   { name: "Magnus Chase", items: [
     "The Sword of Summer","The Hammer of Thor","The Ship of the Dead"
   ]},
-  { name: "Riordan Short Works", items: [
+  { name: "Riordan Misc", items: [
     "9 from the Nine Worlds","Demigods & Magicians","The Sun and The Star"
   ]},
 
@@ -125,51 +119,67 @@ const defaultNovels = [
     "The Red Scrolls of Magic","The Lost Book of the White",
     "The Black Volume of the Dead (upcoming)"
   ]},
-  { name: "Shadowhunter Short Works", items: [
+  { name: "Shadowhunter Collections", items: [
     "The Bane Chronicles","Tales from the Shadowhunter Academy","Ghosts of the Shadow Market"
   ]}
 ];
 
-/* ========== UTILS ========== */
-function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+/* ========= UTILITY ========= */
 
-/* ========== INIT NOVELS ON FIRST RUN ========== */
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
 
-async function ensureNovels(){
-  const snap = await db.collection("novels").limit(1).get();
-  if (!snap.empty) return;
+/* ========= AUTO-REPAIR NOVELS INITIALIZATION ========= */
 
-  for (const series of defaultNovels){
-    const docRef = db.collection("novels").doc();
-    const items = {};
-    series.items.forEach(title => items[uid()] = { title, checked:false });
-    await docRef.set({ name: series.name, items });
+async function ensureNovels() {
+  const novelsRef = db.collection("novels");
+  const snap = await novelsRef.get();
+
+  // If missing or incomplete → rebuild
+  if (snap.size !== defaultNovels.length) {
+
+    // delete existing
+    for (const doc of snap.docs){
+      await novelsRef.doc(doc.id).delete();
+    }
+
+    // rebuild full list
+    for (const series of defaultNovels){
+      const docRef = novelsRef.doc();
+      const items = {};
+      series.items.forEach(title => items[uid()] = { title, checked:false });
+      await docRef.set({ name: series.name, items });
+    }
+
+    console.log("NOVELS REBUILT ✔");
+  } else {
+    console.log("Novels OK ✔");
   }
 }
 
-/* ========== RENDER ========== */
+/* ========= RENDERING ========= */
 
 let unsubscribe = null;
 
 function listen(){
   if (unsubscribe) unsubscribe();
 
-  unsubscribe = db.collection(activeTab).orderBy("name")
+  unsubscribe = db.collection(activeTab)
+    .orderBy("name")
     .onSnapshot(snapshot => {
       const div = document.getElementById("content");
       div.innerHTML = "";
 
       snapshot.forEach(doc => renderSeries(doc.id, doc.data()));
-      
+
       if (snapshot.empty){
-        div.innerHTML = `<div class="group"><div class="group-title">No series</div></div>`;
+        div.innerHTML = `<div class="group"><div class="group-title">No series found</div></div>`;
       }
     });
 }
 
-function renderSeries(id, data){
+function renderSeries(id,data){
   const container = document.createElement("div");
-  container.className = "group";
+  container.className="group";
 
   container.innerHTML = `
     <div class="group-title">
@@ -179,11 +189,11 @@ function renderSeries(id, data){
   `;
 
   const list = document.createElement("ul");
-  list.className = "checklist";
+  list.className="checklist";
 
   Object.entries(data.items || {}).forEach(([key,val])=>{
-    const li = document.createElement("li");
-    li.className = "item";
+    const li=document.createElement("li");
+    li.className="item";
 
     li.innerHTML = `
       <input type="checkbox" ${val.checked ? "checked":""}
@@ -207,57 +217,58 @@ function renderSeries(id, data){
   document.getElementById("content").appendChild(container);
 }
 
-/* ========== CRUD ========== */
+/* ========= CRUD ========= */
 
 function addSeries(){
-  const name = document.getElementById("newSeries").value.trim();
-  if (!name) return;
-  db.collection(activeTab).add({ name, items:{} });
-  document.getElementById("newSeries").value = "";
+  const name=document.getElementById("newSeries").value.trim();
+  if(!name)return;
+  db.collection(activeTab).add({name,items:{}});
+  document.getElementById("newSeries").value="";
 }
 
 function deleteSeries(id){
-  if (confirm("Delete series?"))
+  if(confirm("Delete series?"))
     db.collection(activeTab).doc(id).delete();
 }
 
 function addItem(seriesId){
-  const input = document.getElementById("add-"+seriesId);
-  const title = input.value.trim();
-  if (!title) return;
+  const input=document.getElementById("add-"+seriesId);
+  const title=input.value.trim();
+  if(!title)return;
 
-  const id = uid();
+  const id=uid();
   db.collection(activeTab).doc(seriesId).update({
-    ["items."+id]: { title, checked:false }
+    ["items."+id]:{title,checked:false}
   });
 
-  input.value = "";
+  input.value="";
 }
 
 function removeItem(seriesId,itemId){
   db.collection(activeTab).doc(seriesId).update({
-    ["items."+itemId]: firebase.firestore.FieldValue.delete()
+    ["items."+itemId]:firebase.firestore.FieldValue.delete()
   });
 }
 
 function toggleItem(seriesId,itemId,checked){
   db.collection(activeTab).doc(seriesId).update({
-    ["items."+itemId+".checked"]: checked
+    ["items."+itemId+".checked"]:checked
   });
 }
 
-/* ========== CHECK ALL / UNCHECK ALL ========== */
+/* ========= CHECK ALL ========= */
 
-document.getElementById("checkAll").onclick = async()=>{
-  const snap = await db.collection(activeTab).get();
+document.getElementById("checkAll").onclick=async()=>{
+  const snap=await db.collection(activeTab).get();
   snap.forEach(doc=>{
     const update={};
     Object.keys(doc.data().items||{}).forEach(k=> update["items."+k+".checked"]=true);
     db.collection(activeTab).doc(doc.id).update(update);
   });
 };
-document.getElementById("uncheckAll").onclick = async()=>{
-  const snap = await db.collection(activeTab).get();
+
+document.getElementById("uncheckAll").onclick=async()=>{
+  const snap=await db.collection(activeTab).get();
   snap.forEach(doc=>{
     const update={};
     Object.keys(doc.data().items||{}).forEach(k=> update["items."+k+".checked"]=false);
@@ -265,53 +276,18 @@ document.getElementById("uncheckAll").onclick = async()=>{
   });
 };
 
-/* ========== EXPORT/IMPORT ========== */
+/* ========= TAB SWITCH ========= */
 
-document.getElementById("export").onclick = async()=>{
-  const obj={movies:{},novels:{}};
-  const m=await db.collection("movies").get();
-  m.forEach(doc=> obj.movies[doc.id]=doc.data());
-  const n=await db.collection("novels").get();
-  n.forEach(doc=> obj.novels[doc.id]=doc.data());
-
-  const blob=new Blob([JSON.stringify(obj,null,2)],{type:'application/json'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement("a");
-  a.href=url;a.download="checklist.json";
-  a.click();
-};
-
-document.getElementById("importBtn").onclick=()=> document.getElementById("importFile").click();
-
-document.getElementById("importFile").onchange=e=>{
-  const f=e.target.files[0];
-  if(!f)return;
-
-  const r=new FileReader();
-  r.onload=async(ev)=>{
-    try{
-      const data=JSON.parse(ev.target.result);
-      for(const [id,val] of Object.entries(data.movies||{}))
-        await db.collection("movies").add(val);
-      for(const [id,val] of Object.entries(data.novels||{}))
-        await db.collection("novels").add(val);
-
-      alert("Import complete");
-    }catch(err){ alert("Invalid file"); }
-  };
-  r.readAsText(f);
-};
-
-/* ========== INIT ========== */
-
-document.querySelectorAll(".tab").forEach(tab=>{
-  tab.onclick=()=>{
-    document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
-    tab.classList.add("active");
-    activeTab=tab.dataset.tab;
+document.querySelectorAll(".tab").forEach(t=>{
+  t.onclick=()=>{
+    document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+    t.classList.add("active");
+    activeTab=t.dataset.tab;
     listen();
-  };
+  }
 });
+
+/* ========= INIT ========= */
 
 (async()=>{
   await ensureNovels();
