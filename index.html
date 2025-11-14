@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Universal Checklist – Synced</title>
+
+<style>
+    body {
+        margin: 0;
+        font-family: system-ui, Arial;
+        background: #0c1424;
+        color: #e8f4ff;
+    }
+    .tabs {
+        display: flex;
+        background: #0a1a33;
+        border-bottom: 2px solid #122b4a;
+    }
+    .tab {
+        flex: 1;
+        padding: 14px;
+        text-align: center;
+        cursor: pointer;
+        color: #7dd3fc;
+        font-weight: 600;
+    }
+    .tab.active {
+        background: #122b4a;
+        color: white;
+    }
+    .container {
+        padding: 16px;
+        max-width: 800px;
+        margin: auto;
+    }
+    .group {
+        margin-top: 20px;
+        background: #10243f;
+        padding: 14px;
+        border-radius: 10px;
+    }
+    .group-title {
+        font-size: 18px;
+        color: #7dd3fc;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .item {
+        display: flex;
+        align-items: center;
+        margin: 8px 0;
+        padding: 6px;
+        border-radius: 6px;
+        background: rgba(255,255,255,0.03);
+    }
+    input[type=checkbox] {
+        width: 22px;
+        height: 22px;
+        margin-right: 10px;
+        accent-color: #7dd3fc;
+    }
+    button {
+        background: #153765;
+        color: #7dd3fc;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        margin-left: 6px;
+    }
+    button.danger {
+        background: #5a0e0e;
+        color: #ffb9b9;
+    }
+    .add-area {
+        margin-top: 14px;
+        display: flex;
+        gap: 8px;
+    }
+    input[type=text] {
+        flex: 1;
+        padding: 10px;
+        background: #122b4a;
+        border: none;
+        color: white;
+        border-radius: 8px;
+    }
+</style>
+</head>
+
+<body>
+
+<!-- ==================== TABS ======================= -->
+<div class="tabs">
+    <div class="tab active" data-tab="movies">🎬 Movies</div>
+    <div class="tab" data-tab="novels">📚 Novels</div>
+</div>
+
+<div class="container">
+    <!-- Main content -->
+    <div id="content"></div>
+
+    <!-- Add New Series -->
+    <div class="add-area">
+        <input id="newSeries" type="text" placeholder="New series name...">
+        <button onclick="addSeries()">Add Series</button>
+    </div>
+</div>
+
+<!-- ================= FIREBASE IMPORTS ================= -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+<script>
+/* ==================== FIREBASE CONFIG ====================
+   🔥 IMPORTANT: Replace with your Firebase project config! 
+----------------------------------------------------------- */
+
+const firebaseConfig = {
+    apiKey: "AIzaSyBVxEWfNXIVvcTRmhhEms0TY2G3clbXuZs",
+    authDomain: "checklist-eeb85.firebaseapp.com",
+    projectId: "checklist-eeb85",
+    storageBucket: "checklist-eeb85.firebasestorage.app",
+    messagingSenderId: "390982627640",
+    appId: "1:390982627640:web:ed01d655b2ba7640e5d1cd",
+    measurementId: "G-P6YEE8T6MC"
+  };
+
+
+/* ========================================================= */
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+let activeTab = "movies";
+
+// Switch Tabs
+document.querySelectorAll(".tab").forEach(tab => {
+    tab.addEventListener("click", () => {
+        document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+        tab.classList.add("active");
+        activeTab = tab.dataset.tab;
+        loadData();
+    });
+});
+
+// Load data from Firestore
+function loadData() {
+    const content = document.getElementById("content");
+    content.innerHTML = "Loading...";
+
+    db.collection(activeTab).orderBy("name").onSnapshot(snapshot => {
+        content.innerHTML = "";
+        snapshot.forEach(doc => {
+            renderSeries(doc.id, doc.data());
+        });
+    });
+}
+
+// Render a Series & Checklist
+function renderSeries(id, data) {
+    const container = document.createElement("div");
+    container.className = "group";
+
+    container.innerHTML = `
+        <div class="group-title">
+            ${data.name}
+            <span>
+                <button class="danger" onclick="deleteSeries('${id}')">Delete</button>
+            </span>
+        </div>
+
+        <div id="items-${id}">
+            ${Object.entries(data.items || {}).map(([key, val]) => `
+                <div class="item">
+                    <input type="checkbox" ${val.checked ? "checked" : ""} 
+                           onchange="toggleItem('${id}', '${key}', this.checked)">
+                    <span>${val.title}</span>
+                </div>
+            `).join("")}
+        </div>
+
+        <div class="add-area">
+            <input id="addInput-${id}" type="text" placeholder="Add item...">
+            <button onclick="addItem('${id}')">Add</button>
+        </div>
+    `;
+
+    document.getElementById("content").appendChild(container);
+}
+
+// Add a new series
+function addSeries() {
+    const name = document.getElementById("newSeries").value.trim();
+    if (!name) return;
+
+    db.collection(activeTab).add({
+        name: name,
+        items: {}
+    });
+
+    document.getElementById("newSeries").value = "";
+}
+
+// Delete series
+function deleteSeries(id) {
+    if (confirm("Delete this series?"))
+        db.collection(activeTab).doc(id).delete();
+}
+
+// Add item inside a series
+function addItem(seriesId) {
+    const input = document.getElementById(`addInput-${seriesId}`);
+    const title = input.value.trim();
+    if (!title) return;
+
+    const itemId = Date.now().toString();
+
+    db.collection(activeTab).doc(seriesId).update({
+        [`items.${itemId}`]: { title: title, checked: false }
+    });
+
+    input.value = "";
+}
+
+// Toggle checked item
+function toggleItem(seriesId, itemId, checked) {
+    db.collection(activeTab).doc(seriesId).update({
+        [`items.${itemId}.checked`]: checked
+    });
+}
+
+// Initial load
+loadData();
+</script>
+
+</body>
+</html>
